@@ -1,0 +1,24 @@
+{
+  "name": "concesionario",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/jdr/index.js",
+  "scripts": {
+    "start": "node src/jdr/index.js",
+    "dev": "nodemon  src/jdr/index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "mysql2": "^3.19.1"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0",
+    "nodemon": "^3.0.1",
+    "supertest": "^7.2.2"
+  },
+  "keywords": [],
+  "author": "javier diaz Rayo",
+  "license": "ISC"
+}
