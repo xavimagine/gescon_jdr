@@ -1,13 +1,13 @@
 const request = require("supertest");
 const express = require("express");
 
-jest.mock("../service/CocheService", () => ({
+jest.mock("../src/jdr/service/CocheService", () => ({
     consultarCochesPorMarca: jest.fn(),
     crearNuevoCoche: jest.fn(),
 }));
 
-const cocheService = require("../service/CocheService");
-const cocheRoutes = require("../routes/cocheRoutes");
+const cocheService = require("../src/jdr/service/CocheService");
+const cocheRoutes = require("../src/jdr/routes/cocheRoutes");
 
 const app = express();
 app.use(express.json());
