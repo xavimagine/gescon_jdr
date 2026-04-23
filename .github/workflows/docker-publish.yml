@@ -14,12 +14,13 @@ on:
 env:
     REGISTRY: docker.io
     IMAGE_NAME: xavimagine/proyecto-aws
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
     test:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
             - name: Use Node.js
               uses: actions/setup-node@v4
               with:
