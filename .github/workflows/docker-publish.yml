@@ -17,22 +17,21 @@ env:
 
 jobs:
     test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20' 
-      - name: Install dependencies
-        run: npm install
-      - name: Run tests
-        run: npm test # Aquí se ejecutan tus tests
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v4
+        - name: Use Node.js
+            uses: actions/setup-node@v4
+            with:
+            node-version: '20' 
+        - name: Install dependencies
+            run: npm install
+        - name: Run tests
+            run: npm test # Aquí se ejecutan tus tests
     #este build crea un repositorio con la imagen  dandole el nombre que se puseo en env
     build:
         #Solo se ejecuta si testsale bien
         needs: test 
-        runs-on: ubuntu-latest
         # Github usara un ordenador ubunto para hacer el build y hay que darle los permisos
         runs-on: ubuntu-latest
         permissions:
@@ -95,8 +94,3 @@ jobs:
         run: npm install
       - name: Run tests
         run: npm test # Aquí se ejecutan tus tests (Jest, Mocha, etc.)
-
-  # --- TRABAJO 2: CONSTRUCCIÓN (Tu código actual) ---
-  build:
-    needs: test # <--- CRÍTICO: Solo empieza si 'test' sale bien
-    runs-on: ubuntu-latest
