@@ -11,7 +11,7 @@ services:
             MYSQL_USER: concesionario
             MYSQL_PASSWORD: concesionario1234
         ports:
-            - "80:300"
+            - "3306:3306"
         volumes:
             - mysql_data:/var/lib/mysql
             - ./src/jdr/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -23,7 +23,7 @@ services:
         container_name: gescon_jdr
         restart: always
         ports:
-            - "80:3000"
+            - "8080:3000"
         environment:
             DB_HOST: mysql
             DB_PORT: 3306
