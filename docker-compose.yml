@@ -31,6 +31,7 @@ services:
             DB_PASSWORD: concesionario1234
             DB_NAME: concesionario_jdr
             PORT: 3000
+
         depends_on:
             - mysql
         networks:
