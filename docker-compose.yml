@@ -36,6 +36,8 @@ services:
             - mysql
         networks:
             - concesionario_net
+volumes:
+    mysql_data:
 
 networks:
     concesionario_net:
