@@ -95,16 +95,20 @@ jobs:
                   username: ubuntu # Usuario (ubuntu por defecto)
                   key: ${{ secrets.AWS_SSH_KEY }} # Tu archivo .pem
                   script: |
-                      # 1. Identificarse en Docker (opcional si es público, pero recomendado)
-                      echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+                      # 1. Ir a la carpeta donde reside el docker-compose.yml en tu servidor AWS
+                        cd ~/gescon_jdr || exit
 
-                      # 2. Descargar la última imagen del repositorio
-                      docker pull ${{ env.IMAGE_NAME }}:master
-                      docker-compose up -d
-                      # 3. Detener y eliminar el contenedor antiguo si existe
-                      docker stop mi-contenedor-aws || true
-                      docker rm mi-contenedor-aws || true
+                        # 2. Login en Docker
+                        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-                      # 4. Ejecutar el nuevo contenedor
-                      # Cambia el puerto 3000 si tu app de Node usa otro (ej: 8080)
-                      docker run -d --name mi-contenedor-aws -p 80:3000 ${{ env.IMAGE_NAME }}:master
+                        # 3. Limpiar cualquier rastro de contenedores manuales antiguos para liberar el puerto
+                        docker stop mi-contenedor-aws || true
+                        docker rm mi-contenedor-aws || true
+
+                        # 4. Usar Docker Compose para gestionar todo el stack (App + DB)
+                        # Esto asegura que se use la red 'concesionario_net' definida en el compose
+                        docker-compose pull
+                        docker-compose up -d --force-recreate
+
+                        # 5. Limpieza de imágenes huérfanas
+                        docker image prune -f
