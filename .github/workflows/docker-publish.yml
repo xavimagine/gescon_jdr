@@ -100,7 +100,7 @@ jobs:
 
                       # 2. Descargar la última imagen del repositorio
                       docker pull ${{ env.IMAGE_NAME }}:master
-
+                      docker-compose up -d
                       # 3. Detener y eliminar el contenedor antiguo si existe
                       docker stop mi-contenedor-aws || true
                       docker rm mi-contenedor-aws || true
