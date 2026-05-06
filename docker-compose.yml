@@ -19,11 +19,11 @@ services:
             - concesionario_net
 
     app:
-        build: .
+        image: xavimagine/proyecto-aws:master
         container_name: gescon_jdr
         restart: always
         ports:
-            - "3000:3000"
+            - "80:3000"
         environment:
             DB_HOST: mysql
             DB_PORT: 3306
