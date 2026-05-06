@@ -1,6 +1,5 @@
 const express = require("express");
 require("dotenv").config();
-
 const cocheRoutes = require("./routes/cocheRoutes");
 
 const app = express();
