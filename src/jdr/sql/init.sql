@@ -1,7 +1,7 @@
-CREATE DATABASE concesionario_jdr;
-USE concesionario_jdr;  
+CREATE DATABASE IF NOT EXISTS concesionario_jdr;
+USE concesionario_jdr;
 
-CREATE TABLE T_COCHE (
+CREATE TABLE IF NOT EXISTS T_COCHE (
     identificador INT PRIMARY KEY AUTO_INCREMENT,
     marca VARCHAR(50) NOT NULL,
     modelo VARCHAR(50) NOT NULL,
@@ -9,10 +9,15 @@ CREATE TABLE T_COCHE (
     CONSTRAINT CHK_CILINDRADA_POSITIVA CHECK (cilindrada > 0)
 );
 
-insert into T_COCHE values (1,'Renault', 'Megane', 1500);
-insert into T_COCHE values (2,'Seat', 'León', 1600);
-insert into T_COCHE values (3,'Suzuki', 'Vitara', 1900);
-insert into T_COCHE values (4,'Seat', 'Clio', 1400);
-insert into T_COCHE values (5,'Seat', 'Ibiza', 1400);
-insert into T_COCHE values (6,'Peugeot', '308', 2000);
-insert into T_COCHE values (7,'Renault', 'Megane', 1500);
+INSERT INTO T_COCHE (identificador, marca, modelo, cilindrada) VALUES
+  (1,'Renault', 'Megane', 1500),
+  (2,'Seat', 'León', 1600),
+  (3,'Suzuki', 'Vitara', 1900),
+  (4,'Seat', 'Clio', 1400),
+  (5,'Seat', 'Ibiza', 1400),
+  (6,'Peugeot', '308', 2000),
+  (7,'Renault', 'Megane', 1500)
+ON DUPLICATE KEY UPDATE
+  marca = VALUES(marca),
+  modelo = VALUES(modelo),
+  cilindrada = VALUES(cilindrada);

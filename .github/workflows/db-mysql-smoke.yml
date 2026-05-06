@@ -1,0 +1,53 @@
+name: DB - MySQL smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["master"]
+
+defaults:
+  run:
+    working-directory: escon
+
+jobs:
+  mysql-smoke:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root1234
+          MYSQL_DATABASE: concesionario_jdr
+          MYSQL_USER: concesionario
+          MYSQL_PASSWORD: concesionario1234
+        ports:
+          - 3306/tcp
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot1234"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install mysql client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Wait for MySQL healthcheck
+        run: |
+          for i in {1..60}; do
+            mysqladmin ping -h 127.0.0.1 -P "${{ job.services.mysql.ports[3306] }}" -uroot -proot1234 --silent && exit 0
+            sleep 2
+          done
+          echo "MySQL did not become ready in time" >&2
+          exit 1
+
+      - name: Apply schema/data (init.sql)
+        run: |
+          mysql -h 127.0.0.1 -P "${{ job.services.mysql.ports[3306] }}" -uroot -proot1234 < src/jdr/sql/init.sql
+
+      - name: Verify DB seeded
+        run: |
+          mysql -h 127.0.0.1 -P "${{ job.services.mysql.ports[3306] }}" -uroot -proot1234 -e "SELECT COUNT(*) AS total FROM concesionario_jdr.T_COCHE;"
