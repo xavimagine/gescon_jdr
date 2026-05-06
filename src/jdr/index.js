@@ -1,5 +1,5 @@
 const express = require("express");
-require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+require("dotenv").config();
 const cocheRoutes = require("./routes/cocheRoutes");
 
 const app = express();
