@@ -16,6 +16,10 @@ env:
     IMAGE_NAME: xavimagine/proyecto-aws
     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+defaults:
+    run:
+        working-directory: escon
+
 jobs:
     test:
         runs-on: ubuntu-latest
@@ -70,7 +74,8 @@ jobs:
               id: build-and-push
               uses: docker/build-push-action@v5
               with:
-                  context: .
+                  context: ./escon
+                  file: ./escon/Dockerfile
                   push: ${{ github.event_name != 'pull_request' }}
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
@@ -84,7 +89,7 @@ jobs:
                   DIGEST: ${{ steps.build-and-push.outputs.digest }}
               run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
     deploy:
-        needs: build
+        needs: build # Solo se ejecuta si el Docker Build fue exitoso
         if: github.event_name != 'pull_request' # No desplegamos en pruebas de pull request
         runs-on: ubuntu-latest
         steps:
@@ -97,12 +102,26 @@ jobs:
                   script: |
                       # 1. Identificarse en Docker (opcional si es público, pero recomendado)
                       echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
                       # 2. Descargar la última imagen del repositorio
                       docker pull ${{ env.IMAGE_NAME }}:master
-                      docker-compose up -d
+
+                      # 2.1 Escribir variables de entorno para la app (BD, puerto, etc.)
+                      # Debes tener estos secrets creados en GitHub:
+                      # DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME (y opcionalmente PORT)
+                      cat > app.env <<EOF
+                      DB_HOST=${{ secrets.DB_HOST }}
+                      DB_PORT=${{ secrets.DB_PORT }}
+                      DB_USER=${{ secrets.DB_USER }}
+                      DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                      DB_NAME=${{ secrets.DB_NAME }}
+                      PORT=3000
+                      EOF
+
                       # 3. Detener y eliminar el contenedor antiguo si existe
                       docker stop mi-contenedor-aws || true
                       docker rm mi-contenedor-aws || true
+
                       # 4. Ejecutar el nuevo contenedor
                       # Cambia el puerto 3000 si tu app de Node usa otro (ej: 8080)
-                      docker run -d --name mi-contenedor-aws -p 80:3000 ${{ env.IMAGE_NAME }}:master
+                      docker run -d --name mi-contenedor-aws --env-file app.env -p 80:3000 ${{ env.IMAGE_NAME }}:master
