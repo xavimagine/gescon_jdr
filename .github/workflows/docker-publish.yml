@@ -16,11 +16,15 @@ env:
     IMAGE_NAME: xavimagine/proyecto-aws
     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+defaults:
+    run:
+        working-directory: escon
+
 jobs:
     test:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v4
             - name: Use Node.js
               uses: actions/setup-node@v4
               with:
@@ -41,7 +45,7 @@ jobs:
             id-token: write
         # son los paso que debe realizar cada jobs que se ejecuta
         steps:
-            #copia el codigo del repositorio al servidor de github
+            #copia el codigo del repositorio al servidor de gitub
             - name: Checkout repository
               uses: actions/checkout@v4
             #instala una dependencia para poder crear la imagen
@@ -70,7 +74,8 @@ jobs:
               id: build-and-push
               uses: docker/build-push-action@v5
               with:
-                  context: .
+                  context: ./escon
+                  file: ./escon/Dockerfile
                   push: ${{ github.event_name != 'pull_request' }}
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
@@ -95,22 +100,28 @@ jobs:
                   username: ubuntu # Usuario (ubuntu por defecto)
                   key: ${{ secrets.AWS_SSH_KEY }} # Tu archivo .pem
                   script: |
-                      # 1. Entrar a la carpeta del proyecto
-                      cd ~/gescon_jdr || exit
-
-                      # 2. Login (necesario si tu imagen es privada)
+                      # 1. Identificarse en Docker (opcional si es público, pero recomendado)
                       echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-                      # 3. Forzar la descarga de la última versión de la imagen
-                      docker-compose pull app
+                      # 2. Descargar la última imagen del repositorio
+                      docker pull ${{ env.IMAGE_NAME }}:master
 
-                      # 4. Detener cualquier contenedor manual que esté estorbando el puerto 80
+                      # 2.1 Escribir variables de entorno para la app (BD, puerto, etc.)
+                      # Debes tener estos secrets creados en GitHub:
+                      # DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME (y opcionalmente PORT)
+                      cat > app.env <<'EOF'
+                        DB_HOST=${{ secrets.DB_HOST }}
+                        DB_PORT=${{ secrets.DB_PORT }}
+                        DB_USER=${{ secrets.DB_USER }}
+                        DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                        DB_NAME=${{ secrets.DB_NAME }}
+                        PORT=3000
+                        EOF
+
+                      # 3. Detener y eliminar el contenedor antiguo si existe
                       docker stop mi-contenedor-aws || true
                       docker rm mi-contenedor-aws || true
 
-                      # 5. Levantar el stack completo (App + DB)
-                      # Esto usará la red 'concesionario_net' definida en tu archivo
-                      docker-compose up -d --build
-
-                      # 6. Limpiar imágenes antiguas
-                      docker image prune -f
+                      # 4. Ejecutar el nuevo contenedor
+                      # Cambia el puerto 3000 si tu app de Node usa otro (ej: 8080)
+                      docker run -d --name mi-contenedor-aws --env-file app.env -p 80:3000 ${{ env.IMAGE_NAME }}:master
