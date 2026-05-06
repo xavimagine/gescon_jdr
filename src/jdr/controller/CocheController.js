@@ -14,6 +14,7 @@ class CocheController {
             const coches = await cocheService.consultarCochesPorMarca(marca);
             return res.status(200).json(coches);
         } catch (error) {
+            console.logg(error);
             return res.status(500).json({ error: error.message });
         }
     }
