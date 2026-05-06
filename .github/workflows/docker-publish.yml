@@ -24,7 +24,7 @@ jobs:
     test:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v4
             - name: Use Node.js
               uses: actions/setup-node@v4
               with:
@@ -109,14 +109,14 @@ jobs:
                       # 2.1 Escribir variables de entorno para la app (BD, puerto, etc.)
                       # Debes tener estos secrets creados en GitHub:
                       # DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME (y opcionalmente PORT)
-                      cat > app.env <<EOF
-                      DB_HOST=${{ secrets.DB_HOST }}
-                      DB_PORT=${{ secrets.DB_PORT }}
-                      DB_USER=${{ secrets.DB_USER }}
-                      DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-                      DB_NAME=${{ secrets.DB_NAME }}
-                      PORT=3000
-                      EOF
+                      cat > app.env <<'EOF'
+                        DB_HOST=${{ secrets.DB_HOST }}
+                        DB_PORT=${{ secrets.DB_PORT }}
+                        DB_USER=${{ secrets.DB_USER }}
+                        DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                        DB_NAME=${{ secrets.DB_NAME }}
+                        PORT=3000
+                        EOF
 
                       # 3. Detener y eliminar el contenedor antiguo si existe
                       docker stop mi-contenedor-aws || true
