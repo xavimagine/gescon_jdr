@@ -85,34 +85,26 @@ jobs:
               run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
     deploy:
         needs: build
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' # No desplegamos en pruebas de pull request
         runs-on: ubuntu-latest
         steps:
             - name: Deploy to AWS via SSH
               uses: appleboy/ssh-action@v1.0.3
               with:
-                  host: ${{ secrets.AWS_HOST }}
-                  username: ubuntu
-                  key: ${{ secrets.AWS_SSH_KEY }}
+                  host: ${{ secrets.AWS_HOST }} # IP de tu EC2
+                  username: ubuntu # Usuario (ubuntu por defecto)
+                  key: ${{ secrets.AWS_SSH_KEY }} # Tu archivo .pem
                   script: |
-                      # 1. Entrar en la carpeta del proyecto
-                      cd ~/gescon_jdr || mkdir ~/gescon_jdr && cd ~/gescon_jdr
-
-                      # 2. Login en Docker
+                      # 1. Identificarse en Docker (opcional si es público, pero recomendado)
                       echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-                      # 3. Crear el archivo .env dinámicamente con los secretos de GitHub
-                      # Esto soluciona el error de ECONNREFUSED 127.0.0.1
-                      echo "DB_HOST=mysql" > .env
-                      echo "DB_PORT=3306" >> .env
-                      echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-                      echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-                      echo "DB_NAME=concesionario_jdr" >> .env
-                      echo "PORT=3000" >> .env
-
-                      # 4. Descargar la última imagen
+                      # 2. Descargar la última imagen del repositorio
                       docker pull ${{ env.IMAGE_NAME }}:master
+                      docker-compose up -d
+                      # 3. Detener y eliminar el contenedor antiguo si existe
+                      docker stop mi-contenedor-aws || true
+                      docker rm mi-contenedor-aws || true
 
-                      # 5. Desplegar usando SOLO Docker Compose
-                      # -d: segundo plano, --force-recreate: asegura que use la imagen nueva
-                      docker-compose up -d --force-recreate --remove-orphans
+                      # 4. Ejecutar el nuevo contenedor
+                      # Cambia el puerto 3000 si tu app de Node usa otro (ej: 8080)
+                      docker run -d --name mi-contenedor-aws -p 80:3000 ${{ env.IMAGE_NAME }}:master
