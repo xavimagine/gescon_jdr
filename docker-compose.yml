@@ -10,8 +10,6 @@ services:
             MYSQL_DATABASE: concesionario_jdr
             MYSQL_USER: concesionario
             MYSQL_PASSWORD: concesionario1234
-        ports:
-            - "3306:3306"
         volumes:
             - mysql_data:/var/lib/mysql
             - ./src/jdr/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
