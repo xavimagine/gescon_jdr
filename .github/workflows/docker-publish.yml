@@ -84,7 +84,7 @@ jobs:
                   DIGEST: ${{ steps.build-and-push.outputs.digest }}
               run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
     deploy:
-        needs: build
+        needs: build # Solo se ejecuta si el Docker Build fue exitoso
         if: github.event_name != 'pull_request' # No desplegamos en pruebas de pull request
         runs-on: ubuntu-latest
         steps:
@@ -100,7 +100,7 @@ jobs:
 
                       # 2. Descargar la última imagen del repositorio
                       docker pull ${{ env.IMAGE_NAME }}:master
-                      docker-compose up -d
+
                       # 3. Detener y eliminar el contenedor antiguo si existe
                       docker stop mi-contenedor-aws || true
                       docker rm mi-contenedor-aws || true
