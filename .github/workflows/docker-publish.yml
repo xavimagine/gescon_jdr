@@ -3,8 +3,6 @@ name: Docker
 # On configura cuando se ejecuta el fujo
 # se programa para que se ejecute de madrugada y cuando se hacen push y pull a la rama master
 on:
-    schedule:
-        - cron: "29 9 * * *"
     push:
         branches: ["master"]
         tags: ["v*.*.*"]
